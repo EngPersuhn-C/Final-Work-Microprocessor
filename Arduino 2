@@ -1,0 +1,68 @@
+//Declarações das variáveis utilizadas no programa
+int segmentos[7] = {3, 4, 5, 6 ,7, 8, 9}; //Declaração leds Display
+int reset = 2; //Botão para resetar o Display
+char leitura_serial; //Variável para salvar o conteúdo do serial
+
+void setup()
+{
+  	Serial.begin(9600); //Inicializando serial
+  	for(int i = 0; i < 7; i++){
+      	pinMode(i, OUTPUT); //Definindo os pinos do Display como saídas
+    }
+  	pinMode(reset, INPUT); //Definindo botão como entrada
+  	attachInterrupt(digitalPinToInterrupt(reset), reset_7seg, RISING);
+  	//Interrupção via periférico (botão)
+}
+
+void loop()
+{
+	if(Serial.available() > 0){ //Se tiver algo na conexão serial
+      	leitura_serial = Serial.read(); //Salva o conteúdo
+      	if(leitura_serial == 'A'){ //Se o conteúdo for A
+          	A(); //Insere 'A' (alerta) no display
+        }
+      	if(leitura_serial == 'B'){ //Se o conteúdo for B
+          	zero(); //Desliga display
+        }
+    }
+  
+  	delay(10);
+}
+
+void reset_7seg() //Função da interrupção
+{	
+      	zero(); //Desliga display
+}
+
+void A() //Imprime A
+{
+	digitalWrite(segmentos[0], HIGH);
+  	digitalWrite(segmentos[1], HIGH);
+  	digitalWrite(segmentos[2], HIGH);
+  	digitalWrite(segmentos[3], LOW);
+  	digitalWrite(segmentos[4], HIGH);
+  	digitalWrite(segmentos[5], HIGH);
+  	digitalWrite(segmentos[6], HIGH);
+}
+
+void E() //Imprime E
+{
+  	digitalWrite(segmentos[0], HIGH);
+  	digitalWrite(segmentos[1], LOW);
+  	digitalWrite(segmentos[2], LOW);
+  	digitalWrite(segmentos[3], HIGH);
+  	digitalWrite(segmentos[4], HIGH);
+  	digitalWrite(segmentos[5], HIGH);
+  	digitalWrite(segmentos[6], HIGH);
+}
+
+void zero() //Reseta o Display
+{
+	digitalWrite(segmentos[0], LOW);
+  	digitalWrite(segmentos[1], LOW);
+  	digitalWrite(segmentos[2], LOW);
+  	digitalWrite(segmentos[3], LOW);
+  	digitalWrite(segmentos[4], LOW);
+  	digitalWrite(segmentos[5], LOW);
+  	digitalWrite(segmentos[6], LOW);  
+}
