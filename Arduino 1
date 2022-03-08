@@ -1,0 +1,60 @@
+//Definição das variáveis e das portas do arduíno
+int botao_expulsor = 2;
+int rele = 8;
+int TRIG = 6;
+int ECHO = 7;
+int tempo = 0;
+int auxiliar = 0;
+
+void setup()
+{
+  	Serial.begin(9600); //Inicializa o serial
+	pinMode(rele, OUTPUT); //Define orele como saída
+  	pinMode(botao_expulsor, INPUT); //Define o botão como entrada
+  	pinMode(TRIG, OUTPUT); //Define pino TRIG do ultrassônico como saída
+  	pinMode(ECHO, INPUT); //Define pino ECHO do ultrassônico como entrada
+  	attachInterrupt(digitalPinToInterrupt(botao_expulsor), expulsor, RISING);
+  	//Interrupção via periférico (botão)
+}
+
+void loop()
+{	
+  	int leitura_A0 = analogRead(A0); //Leitura do sinal do potenciometro
+  	tempo = map(leitura_A0, 0, 1023, 0, 10000); //COnversão do intervalo do potenciometro para 10 segundos
+
+  	int distancia = Ultrasonic(); //Chama a funçã responsável por obter a distância encontrada no sensor ultrassônico
+  	if(distancia <= 15){ //Se a distância for menor que 15 cm
+      	digitalWrite(rele, HIGH); //Liga o relè
+      	Serial.write('A'); //Informa A no serial
+      	delay(tempo); //Espera o tempo de acordo com o que está no potenciometro
+      	digitalWrite(rele, LOW); //Desliga o relè
+      	Serial.write('B'); //Informa B no serial
+    }
+  
+  	delay(10);
+}
+
+int Ultrasonic(){ //Função responsável por determinar a distância
+	long duracao;
+  	digitalWrite(TRIG, HIGH);
+  	delayMicroseconds(10);
+  	digitalWrite(TRIG, LOW);
+  	//As linhas acima são responsáveis por emitir o sinal do sensor ultrassônico
+  
+  	duracao = pulseIn(ECHO, HIGH); //Leitura do sinal ultrassônico
+  	return duracao /29.38/2; //Conversão para a distância correta
+}
+
+void expulsor() //Função responsável por ligar o relè quando o botao for pressionado
+{				//E desligar o mesmo quando pressionado novamente
+  	if(auxiliar == 0){ //Se auxiliar for 0
+		digitalWrite(rele, HIGH); //Liga relè
+      	auxiliar = 1; //Auxiliar informa relè ligado
+      	Serial.write('A'); //Envia A para o serial
+    }
+  	else{ //Caso contrário
+      	digitalWrite(rele, LOW); //Desliga relè
+  		auxiliar = 0; //Auxiliar informa relè desligado
+      	Serial.write('B'); //Envia B parao serial
+	}
+}
